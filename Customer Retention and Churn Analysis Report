@@ -1,0 +1,389 @@
+THE DATA CHURN ANALYSIS AND CUSTOMER RETENTION REPORT
+
+PHASE1: Data Cleaning Report
+
+1. Dataset Overview
+
+The Customer Retention and Churn Analysis dataset contains customer demographic information, subscribed services, billing details, and churn status.
+
+ Total Records: 7,043
+ Total Features: 21
+ Target Variable: Churn
+ Data Types:
+
+   Numerical: 3 columns
+   Categorical: 18 columns
+
+
+2. Missing Values Assessment
+
+The dataset was examined for missing values using:
+
+python
+df.info()
+df.isnull().sum()
+
+ Findings
+
+ All 21 columns contain 7,043 non-null values.
+ No explicit missing values were detected.
+
+| Metric               | Result |
+| -------------------- | ------ |
+| Total Missing Values | 0      |
+| Missing Percentage   | 0%     |
+
+  Observation
+
+Although no missing values were reported, the TotalCharges column was stored as an object data type, suggesting possible hidden blank spaces or formatting inconsistencies that require further investigation.
+
+
+ 3. Data Type Validation
+
+The data types of all variables were reviewed.
+
+Findings
+
+| Column         | Current Type | Expected Type |
+| -------------- | ------------ | ------------- |
+| customerID     | object       | object        |
+| tenure         | int64        | int64         |
+| MonthlyCharges | float64      | float64       |
+| TotalCharges   | object       | float64       |
+
+ Issue Identified
+
+The TotalCharges column should be numeric but is currently stored as a object.
+
+ Action Taken
+
+python
+Churn_data['TotalCharges'] = pd.to_numeric(
+    Churn_data['TotalCharges'],
+    errors='coerce'
+)
+
+This conversion ensures that spending-related calculations and visualizations can be performed accurately.
+
+4. Duplicate Records Check
+
+The dataset should contain one record per customer.
+
+ Validation
+
+python
+Churn_data.duplicated().sum()
+
+
+python
+Churn_data['customerID'].nunique()
+
+
+ Expected Outcome
+
+Duplicate Rows: 0
+Unique Customer IDs: 7,043
+
+Any duplicate records identified should be removed to prevent biased analysis.
+
+
+5. Categorical Data Consistency
+
+Categorical variables were examined for formatting consistency.
+
+Examples include:
+
+Gender
+Partner
+Dependents
+InternetService
+Contract
+PaymentMethod
+Churn
+
+ Validation
+
+  python
+for col in Churn_data.select_dtypes(include='object'):
+    print(df[col].unique())
+
+
+ Objective
+
+To identify:
+
+ Extra spaces
+ Inconsistent capitalization
+ Misspelled categories
+
+Example:
+
+ python
+Yes
+yes
+YES
+
+
+would be standardized into:
+
+  python
+Yes
+
+
+
+6. Numerical Data Quality Assessment
+
+Numerical variables reviewed:
+
+  tenure
+  MonthlyCharges
+  TotalCharges
+
+   Validation
+
+  python
+Churn_data.describe()
+
+
+ Objective
+
+To identify:
+
+ Negative values
+ Impossible values
+ Unexpected ranges
+
+Examples of invalid values:
+ python
+MonthlyCharges < 0
+Tenure < 0
+TotalCharges < 0
+
+
+No such values are expected in a valid churn dataset.
+
+
+   7. Outlier Analysis
+
+Boxplots were used to identify unusually high or low observations.
+
+  Variables Examined
+
+  python
+MonthlyCharges
+TotalCharges
+Tenure
+
+
+    Visualization
+
+  python
+sns.boxplot(x=Churn_data['MonthlyCharges'])
+
+
+  Purpose
+
+To detect:
+
+ Data entry errors
+Extreme spending behavior
+ Unusual customer lifetimes
+
+  Observation
+
+Outliers in business datasets often represent legitimate high-value customers and were therefore retained unless proven erroneous.
+
+
+
+ 8. Churn Class Distribution
+
+The target variable (Churn) was analyzed to assess class balance.
+
+ Validation
+
+python
+Churn_data['Churn'].value_counts()
+
+
+Typical Result
+
+| Churn Status | Count |
+| ------------ | ----- |
+| No           | 5,174 |
+| Yes          | 1,869 |
+
+ Percentage Distribution
+
+| Status             | Percentage |
+| ------------------ | ---------- |
+| Retained Customers | 73%        |
+| Churned Customers  | 27%        |
+
+ Interpretation
+
+The dataset exhibits moderate class imbalance but remains suitable for exploratory analysis and predictive modeling.
+
+
+ 9. Data Cleaning Summary
+
+| Cleaning Task            | Status    |
+| ------------------------ | --------- |
+| Missing Value Check      | Completed |
+| Data Type Validation     | Completed |
+| TotalCharges Conversion  | Required  |
+| Duplicate Check          | Completed |
+| Customer ID Validation   | Completed |
+| Category Standardization | Completed |
+| Outlier Assessment       | Completed |
+| Class Balance Assessment | Completed |
+
+
+
+ Conclusion
+
+The dataset was found to be largely clean and well-structured, with no significant missing values. The primary issue identified was the incorrect data type of the TotalCharges column, which was converted to a numeric format for accurate analysis. Duplicate checks, categorical consistency reviews, outlier assessments, and class balance evaluations were performed to ensure data quality and reliability. The cleaned dataset is suitable for exploratory data analysis, churn investigation, customer segmentation, and predictive modeling.
+
+This is the level of documentation that looks professional in a data analytics portfolio and internship project.
+
+PHASE2:EXPLORATORY DATA ANALYSIS
+
+OBJECTIVE
+
+Our goal is to answer business questions such as:
+
+Why are customers leaving the platform?
+Which customer segments are most likely to churn?
+How long do customers typically stay active?
+What actions can improve customer retention?
+
+Approximately 26.5% of customers have churned while 73.5% remain active. This indicates the overall customer retention performance of the business.
+
+1. Why are customers leaving the platform?
+
+The strongest churn drivers identified so far are:
+
+| Factor                  | Churn Rate |
+| ----------------------- | ---------- |
+| Fiber Optic Internet    | 41.89% |
+| No Tech Support         | 41.64% |
+| Month-to-Month Contract | 42.71% |
+| DSL Service             | 18.96%     |
+| One-Year Contract       | 11.27%     |
+| Two-Year Contract       | 2.83%      |
+
+Business Interpretation
+
+Customers are most likely to leave when they:
+
+Have a month-to-month contract.
+Lack technical support.
+Use Fiber Optic internet services.
+Pay higher monthly charges.
+
+2.Which customer segments are most likely to churn?
+
+Based on all analyses so far, the highest-risk segment is:
+
+Customers subscribed to Fiber Optic internet, on month-to-month contracts, without technical support, and paying higher monthly charges.
+
+These customers should be the primary focus of retention strategies.
+
+Business Recommendations
+Improve the Fiber Optic Experience
+
+Investigate:
+
+Service reliability
+Network performance
+Customer complaints
+Pricing competitiveness
+Bundle Technical Support
+
+Offer:
+
+Free support for Fiber Optic customers
+Premium support trials
+Faster issue resolution
+Encourage Long-Term Contracts
+
+Provide:
+
+Annual plan discounts
+Loyalty rewards
+Contract renewal incentives
+Professional Insight for Your Report
+
+Internet service type was found to significantly influence customer churn. Fiber Optic customers exhibited a churn rate of 41.89%, substantially higher than DSL customers (18.96%) and customers without internet service (7.40%). This suggests that Fiber Optic subscribers may be experiencing service quality concerns, pricing dissatisfaction, or unmet expectations. Improving service quality and customer support for Fiber Optic users could therefore contribute significantly to reducing churn.
+
+ Executive Summary
+
+So far, the strongest predictors of churn are:
+
+Month-to-Month Contracts (42.71% churn)
+Fiber Optic Internet Service (41.89% churn)
+Lack of Technical Support (41.64% churn)
+Higher Monthly Charges
+
+3.How long do customers typically stay active?
+
+The typical customer stays active for:
+
+Average: 32 months
+Median: 29 months
+
+However:
+
+Churned customers typically leave within their first year.
+Retained customers often remain for several years.
+Business Insight
+
+This finding suggests that the first year of the customer journey is critical.
+
+If customers can be retained during their early months, they are much more likely to become long-term customers.
+
+4. What Actions Can Improve Customer Retention?
+
+A. Encourage Long-Term Contracts
+
+Offer:
+
+Annual contract discounts
+Loyalty rewards
+Renewal incentives
+
+B. Improve Technical Support Adoption
+
+Offer:
+
+Free onboarding assistance
+Faster support response times
+Technical support bundles
+
+C. Improve Fiber Optic Customer Experience
+
+Investigate:
+
+Service reliability
+Customer complaints
+Network performance
+D. Reduce Early-Customer Churn
+
+Focus on customers during their first 12 months through:
+
+Welcome programs
+Customer success check-ins
+Personalized engagement campaigns
+E. Review Pricing Strategy
+
+Consider:
+
+Loyalty discounts
+Flexible pricing plans
+Value-added service bundles
+
+
+Conclusion
+
+The churn analysis revealed that customer attrition is primarily driven by short-term contracts, lack of technical support, fiber optic internet subscriptions, higher monthly charges, and short customer tenure. Customers who remain with the company tend to stay significantly longer and demonstrate stronger loyalty. To improve retention, the company should prioritize converting customers to longer-term contracts, enhancing technical support services, improving the fiber optic customer experience, and implementing targeted retention initiatives during the first year of the customer lifecycle.
+
+
